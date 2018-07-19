@@ -82,9 +82,9 @@ public class Beam : MonoBehaviour
 
                 Vector2 distance = new Vector2(currentX - i.transform.position.x, currentY - i.transform.position.y);
 
-                Debug.Log(distance);
-
                 force = (i.GetComponent<Properties>().size * gravityConstant) / (Mathf.Pow(distance.magnitude, 2));
+
+                Debug.Log(force);
 
                 if (distance.x > 0 && distance.y > 0)
                 {
@@ -104,8 +104,8 @@ public class Beam : MonoBehaviour
                 }
                 else
                 {
-                    resultant.x -= force;
-                    resultant.y -= force;
+                    resultant.x += force;
+                    resultant.y += force;
                 }
 
                 particle.AddForce(resultant, ForceMode2D.Impulse);
