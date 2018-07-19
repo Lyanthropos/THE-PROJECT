@@ -74,17 +74,18 @@ public class Beam : MonoBehaviour
 
         foreach (GameObject i in mReactsTo)
         {
+            float forceX = i.transform.position.x;
+            float forceY = i.transform.position.y;
+
             foreach (Rigidbody2D particle in mActiveParticles)
             {
                 Vector2 resultant = new Vector2(0, 0);
                 float currentX = particle.position.x;
                 float currentY = particle.position.y;
 
-                Vector2 distance = new Vector2(currentX - i.transform.position.x, currentY - i.transform.position.y);
+                Vector2 distance = new Vector2(currentX - forceX, currentY - forceX);
 
                 force = (i.GetComponent<Properties>().size * gravityConstant) / (Mathf.Pow(distance.magnitude, 2));
-
-                Debug.Log(force);
 
                 if (distance.x > 0 && distance.y > 0)
                 {

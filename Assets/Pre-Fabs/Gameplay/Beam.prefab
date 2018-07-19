@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 212618612888708274}
   - component: {fileID: 50841504828581050}
   - component: {fileID: 60948864211944808}
-  m_Layer: 8
+  m_Layer: 5
   m_Name: Beam
   m_TagString: Beam
   m_Icon: {fileID: 0}
@@ -119,6 +119,9 @@ MonoBehaviour:
   nf: {fileID: 21300000, guid: 4e9da09395b015343b5fdfe5dfb26b96, type: 3}
   gpf: {fileID: 21300000, guid: 52ca0c8b23dca62438dbb95b84d2ec09, type: 3}
   gnf: {fileID: 21300000, guid: f3a413ef0c6a61746a7091a46abb7436, type: 3}
+  gravityConstant: 100
+  electricConstant: 1
+  fluxConstant: 1
 --- !u!212 &212618612888708274
 SpriteRenderer:
   m_ObjectHideFlags: 1
