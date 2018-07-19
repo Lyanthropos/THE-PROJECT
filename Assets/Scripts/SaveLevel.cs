@@ -10,7 +10,7 @@ public class SaveLevel : MonoBehaviour {
     StreamWriter sw;
     int id;
     List<double> extraData;
-    List<bool> beamList;
+    bool[] beamList;
     StringBuilder beamProperties;
 
     // Use this for initialization

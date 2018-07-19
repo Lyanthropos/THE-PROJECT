@@ -20,8 +20,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4179424701667948}
   - component: {fileID: 212980750346049816}
-  - component: {fileID: 114537619779316876}
-  - component: {fileID: 114317369772518612}
   - component: {fileID: 114418373012928188}
   - component: {fileID: 50848049336137410}
   - component: {fileID: 58408363705915702}
@@ -40,7 +38,7 @@ Transform:
   m_GameObject: {fileID: 1729143938620342}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.19967389, y: -0.14084819, z: 0.007376916}
-  m_LocalScale: {x: 4, y: 4, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -80,17 +78,6 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.1
---- !u!114 &114317369772518612
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1729143938620342}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4208e986076f6d4da613b12633d324a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114418373012928188
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -102,22 +89,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96f33e8c0ea56074d9402cc5207d087f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravityConstant: 200
-  electricConstant: 200
-  fluxConstant: 200
-  positiveCharge: 0
-  rb: {fileID: 50848049336137410}
---- !u!114 &114537619779316876
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1729143938620342}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03895c666bcd8c8489696018b5cf9749, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  rigidbody: {fileID: 0}
 --- !u!212 &212980750346049816
 SpriteRenderer:
   m_ObjectHideFlags: 1

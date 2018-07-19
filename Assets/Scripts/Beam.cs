@@ -4,28 +4,36 @@ using UnityEngine;
 
 public class Beam : MonoBehaviour
 {
+    public int angle, charge;
+    public Particle particle;
+    private Particle clone;
+    public Sprite g, p, n, f, gp, gn, gf, pf, nf, gpf, gnf;
 
     private System.Diagnostics.Stopwatch timer;
-    private float initialMillis;
-    public int angle, charge;
-    public Rigidbody2D particle, particleClone;
-    public bool mReactGrav, mReactElec, mReactFlux, mBeamPositive;
-    GameObject[] dragableF, staticF, dynamicF;
-    List<bool> mOut;
-    public Sprite g, p, n, f, gp, gn, gf, pf, nf, gpf, gnf;
-    private List<Sprite> sprites;
     private string grav, elec, flux, spriteSearcher;
+    private float initialMillis;
     private Vector2 velocity;
-    public static readonly List<GameObject> mForces = new List<GameObject>();
-    Sprite[] spriteArray;
-    static string[] stringChecker = {"g", "p", "n", "f", "gp", "gn", "gf", "pf", "nf", "gpf", "gnf"};
+    private List<Sprite> sprites;
+    private List<ForceType> mReactantForces;
+    private List<GameObject> mReactsTo;
+    private List<Rigidbody2D> mActiveParticles;
+    private Sprite[] spriteArray;
+    private GameObject[] dragableF, staticF, dynamicF;
+    private static readonly string[] stringChecker = { "g", "p", "n", "f", "gp", "gn", "gf", "pf", "nf", "gpf", "gnf" };
+    private bool[] mBeamProperties;
+    Vector2 origen;
+
+    public float gravityConstant = 1;
+    public float electricConstant = 1;
+    public float fluxConstant = 1;
 
     // Use this for initialization
     void Start()
     {
+        
         sprites = new List<Sprite>();
-        mOut = new List<bool>();
-
+        origen = new Vector2(transform.position.x, transform.position.y);
+            
         sprites.Add(g);
         sprites.Add(p);
         sprites.Add(n);
@@ -41,65 +49,124 @@ public class Beam : MonoBehaviour
         timer = new System.Diagnostics.Stopwatch();
         timer.Start();
         initialMillis = timer.ElapsedMilliseconds;
+        SetSprite();
+        InvokeRepeating("Spawn", 0.002f, 0.015f);
+    }
+
+    private void OnEnable()
+    {
+        mBeamProperties = new bool[4];
+        mReactsTo = new List<GameObject>();
+        mActiveParticles = new List<Rigidbody2D>();
+        GameController.OnForceUpdate += HandleOnForceUpdate;
+    }
+
+    private void OnDisable()
+    {
+        GameController.OnForceUpdate -= HandleOnForceUpdate;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (timer.ElapsedMilliseconds - initialMillis >= 60)
-        {
-            Spawn(particle);
-            initialMillis = timer.ElapsedMilliseconds;
-        }
+        
+        float force;
 
-        SetSprite();
+        foreach (GameObject i in mReactsTo)
+        {
+            foreach (Rigidbody2D particle in mActiveParticles)
+            {
+                Vector2 resultant = new Vector2(0, 0);
+                float currentX = particle.position.x;
+                float currentY = particle.position.y;
+
+                Vector2 distance = new Vector2(currentX - i.transform.position.x, currentY - i.transform.position.y);
+
+                Debug.Log(distance);
+
+                force = (i.GetComponent<Properties>().size * gravityConstant) / (Mathf.Pow(distance.magnitude, 2));
+
+                if (distance.x > 0 && distance.y > 0)
+                {
+                    resultant.x -= force;
+                    resultant.y -= force;
+                }
+                else if (distance.x > 0 && distance.y < 0)
+                {
+                    resultant.x -= force;
+                    resultant.y += force;
+                }
+
+                else if (distance.x < 0 && distance.y > 0)
+                {
+                    resultant.x += force;
+                    resultant.y -= force;
+                }
+                else
+                {
+                    resultant.x -= force;
+                    resultant.y -= force;
+                }
+
+                particle.AddForce(resultant, ForceMode2D.Impulse);
+            }
+        }
     }
 
-    void Spawn(Rigidbody2D item)
+
+    private void Spawn()
     {
-        velocity = Quaternion.AngleAxis(this.transform.eulerAngles.z, Vector3.forward) * Vector2.up;
+        clone = particle.GetPooledInstance<Particle>(transform);
+        clone.transform.position = origen;
+
+        velocity = Quaternion.AngleAxis(transform.eulerAngles.z, Vector3.forward) * Vector2.up;
         velocity.Normalize();
 
-        particleClone = Instantiate(item, new Vector2(transform.position.x, transform.position.y), Quaternion.identity);
-        particleClone.GetComponent<Particle>().SetProperties(GetProperties());
-        particleClone.transform.SetParent(transform);
-
-        particleClone.AddForce(velocity * 400f, ForceMode2D.Impulse);
+        clone.GetComponent<Rigidbody2D>().AddForce(velocity * 400f, ForceMode2D.Impulse);
     }
 
-    public void SetProperites(bool reactGrav, bool reactElec, bool reactFlux, bool beamPositive) {
-        mReactGrav = reactGrav;
-        mReactElec = reactElec;
-        mReactFlux = reactFlux;
-        mBeamPositive = beamPositive;
+    public void SetProperites(bool reactGrav, bool reactElec, bool reactFlux, bool beamPositive)
+    {
+        mBeamProperties[0] = reactGrav;
+        mBeamProperties[1] = reactElec;
+        mBeamProperties[2] = reactFlux;
+        mBeamProperties[3] = beamPositive;
     }
 
-    public List<bool> GetProperties() {
-        mOut.Clear();
-        mOut.Add(mReactGrav);
-        mOut.Add(mReactElec);
-        mOut.Add(mReactFlux);
-        mOut.Add(mBeamPositive);
 
-        return mOut;
+    public bool[] GetProperties()
+    {
+        return mBeamProperties;
+    }
+
+    private void HandleOnForceUpdate(GameObject targetForce, bool active)
+    {
+        bool legal = Legal(targetForce.GetComponent<Properties>().type);
+
+        if (active && legal)
+        {
+            mReactsTo.Add(targetForce);
+        }
+        else if (!active && legal)
+        {
+            mReactsTo.Remove(targetForce);
+        }
+    }
+
+    private bool Legal(ForceType type)
+    {
+        return type.Equals(ForceType.Graviton) == mBeamProperties[0] || type.Equals(ForceType.Electron) == mBeamProperties[1] || type.Equals(ForceType.Fluxion) == mBeamProperties[2] ? true : false;
     }
 
     public void SetSprite()
     {
-        if (mReactGrav)
-        {
-            grav = "g";
-        }
-        else
-        {
-            grav = "";
-        }
+        grav = mBeamProperties[0] ? "g" : "";
 
-        if (mReactElec && mBeamPositive)
+        if (mBeamProperties[1] && mBeamProperties[3])
         {
             elec = "p";
         }
-        else if (mReactElec)
+        else if (mBeamProperties[1])
         {
             elec = "n";
         }
@@ -108,41 +175,28 @@ public class Beam : MonoBehaviour
             elec = "";
         }
 
-        if(mReactFlux)
-        {
-            flux = "f";
-        }
-        else
-        {
-            flux = "";
-        }
+        flux = mBeamProperties[2] ? "f" : "";
 
         spriteSearcher = (grav + elec + flux);
 
-        for(int i = 0; i < sprites.Count; i++)
+        for (int i = 0; i < sprites.Count; i++)
         {
-            if(stringChecker[i] == spriteSearcher)
+            if (stringChecker[i] == spriteSearcher)
             {
-                this.GetComponent<SpriteRenderer>().sprite = sprites[i];
+                GetComponent<SpriteRenderer>().sprite = sprites[i];
             }
         }
-        
     }
 
-    public static void UpdateForces(GameObject gameObject, bool active)
+    public void ActiveParticles(GameObject gameObject, bool active)
     {
         if (active)
         {
-            mForces.Add(gameObject);
+            mActiveParticles.Add(gameObject.GetComponent<Rigidbody2D>());
         }
         else 
         {
-            mForces.Remove(gameObject);
+            mActiveParticles.Remove(gameObject.GetComponent<Rigidbody2D>());
         }
-	}
-
-    public List<GameObject> GetActiveForces() 
-    {
-        return mForces;
     }
 }

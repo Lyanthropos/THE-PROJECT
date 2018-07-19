@@ -37,7 +37,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1995911563566396}
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: -8.53, y: 0.19, z: 0.007376916}
+  m_LocalPosition: {x: -26, y: 13.6, z: 0.007376916}
   m_LocalScale: {x: 2, y: 2, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -107,12 +107,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   angle: 0
   charge: 0
-  particle: {fileID: 50848049336137410, guid: 5b9d9421233b7ae4a9816b5b13b75233, type: 2}
-  particleClone: {fileID: 0}
-  mReactGrav: 1
-  mReactElec: 1
-  mReactFlux: 1
-  mBeamPositive: 1
+  particle: {fileID: 114418373012928188, guid: 5b9d9421233b7ae4a9816b5b13b75233, type: 2}
   g: {fileID: 21300000, guid: 3c73a392e658b10428dc9bc765f79344, type: 3}
   p: {fileID: 21300000, guid: 84ceabb7e16cd4a41ada44dafbff7c8f, type: 3}
   n: {fileID: 21300000, guid: 748f0cfb9bdc83844ad4637d5dbabf84, type: 3}

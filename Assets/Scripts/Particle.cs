@@ -2,89 +2,35 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Particle : MonoBehaviour
+[RequireComponent(typeof(Rigidbody2D))]
+public class Particle : PooledObject
 {
-    List<float> gravDistanceX, gravDistanceY, elecDistanceX, elecDistanceY, fluxDistanceX, fluxDistanceY, mMass, mCharge, mFluxCapacity;
     private List<bool> mProperties;
     List<GameObject> mActiveForces;
     GameObject[] dragableF, staticF, dynamicF;
     float currentX, currentY;
-    Vector2 gravForce, elecForce, fluxForce, resultant;
-    public float gravityConstant = 1;
-    public float electricConstant = 1;
-    public float fluxConstant = 1;
-    public Rigidbody2D rb;
+    //Vector2 resultant;
+    public new Rigidbody2D rigidbody;
+    private List<ForceType> mForces;
+    private Vector2 velocity;
+    int negater = 1;
+    GameObject g;
 
-    // Use this for initialization
-    void Start()
+	private void Awake()
+	{
+        g = this.gameObject;
+	}
+
+	private void OnEnable()
+	{
+        GetComponentInParent<Beam>().ActiveParticles(g, true);
+	}
+
+	private void OnDisable()
     {
-        rb = GetComponent<Rigidbody2D>();
-        gravDistanceX = new List<float>();
-        gravDistanceY = new List<float>();
-        elecDistanceX = new List<float>();
-        elecDistanceY = new List<float>();
-        fluxDistanceX = new List<float>();
-        fluxDistanceY = new List<float>();
-        mMass = new List<float>();
-        mCharge = new List<float>();
-        mFluxCapacity = new List<float>();
-        mActiveForces = new List<GameObject>();
-        gravForce = new Vector2();
-        elecForce = new Vector2();
-        fluxForce = new Vector2();
-        resultant = new Vector2();
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        mActiveForces = GetComponentInParent<Beam>().GetActiveForces();
-        currentX = transform.position.x;
-        currentY = transform.position.y;
-
-        foreach (GameObject i in mActiveForces)
-        {
-            switch (i.GetComponent<Properties>().type)
-            {
-                case ForceType.Graviton:
-                    gravDistanceX.Add((float)i.transform.position.x);
-                    gravDistanceY.Add((float)i.transform.position.y);
-                    mMass.Add((float)i.GetComponent<Properties>().size);
-                    break;
-                case ForceType.Electron:
-                    elecDistanceX.Add((float)i.transform.position.x);
-                    elecDistanceY.Add((float)i.transform.position.y);
-                    mCharge.Add((float)i.GetComponent<Properties>().size);
-                    break;
-                case ForceType.Fluxion:
-                    fluxDistanceX.Add((float)i.transform.position.x);
-                    fluxDistanceY.Add((float)i.transform.position.y);
-                    mFluxCapacity.Add((float)i.GetComponent<Properties>().size);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        elecForce = Electrostatic(elecDistanceX, elecDistanceY, mCharge, mProperties[1]);
-        fluxForce = Flux(fluxDistanceX, fluxDistanceY, mFluxCapacity, mProperties[2]);
-
-        resultant = Gravity(gravDistanceX, gravDistanceY, mMass, mProperties[0]) + elecForce + fluxForce;
-
-        rb.AddForce(resultant, ForceMode2D.Impulse);
-
-        gravDistanceX.Clear();
-        gravDistanceY.Clear();
-        mMass.Clear();
-        elecDistanceX.Clear();
-        elecDistanceY.Clear();
-        mCharge.Clear();
-        fluxDistanceX.Clear();
-        fluxDistanceY.Clear();
-        mFluxCapacity.Clear();
-    }
-
-    private Vector2 Gravity(List<float> xDistance, List<float> yDistance, List<float> mass, bool active) {
+        GetComponentInParent<Beam>().ActiveParticles(g, false);
+	}
+	/*private Vector2 Gravity(List<float> xDistance, List<float> yDistance, List<float> mass, bool active) {
         float totalXForce = 0;
         float totalYForce = 0;
         float force;
@@ -224,10 +170,68 @@ public class Particle : MonoBehaviour
         fluxForce.y = totalYForce;
 
         return fluxForce;
+    }*/
+
+	void OnTriggerEnter2D(Collider2D col)
+    {
+        Vector2 newVelocity, currentVelocity;
+
+        if (!col.CompareTag("Goal") && !col.CompareTag("Mirror"))
+        {
+            ReturnToPool();
+        }
+        else if (col.CompareTag("Mirror"))
+        {
+            currentVelocity = this.gameObject.GetComponent<Rigidbody2D>().velocity;
+            int angle = angleFinder(col.transform.eulerAngles.z);
+
+            switch (angle)
+            {
+                case 1:
+                    newVelocity = new Vector2(-currentVelocity.x, currentVelocity.y);
+                    break;
+                case 2:
+                    newVelocity = new Vector2(currentVelocity.x, -currentVelocity.y);
+                    break;
+                case 3:
+                    newVelocity = new Vector2(currentVelocity.y * negater, -currentVelocity.x * negater);
+                    break;
+                default:
+                    newVelocity = currentVelocity;
+                    break;
+            }
+
+            gameObject.GetComponent<Rigidbody2D>().velocity = newVelocity;
+        }
     }
 
-    public void SetProperties(List<bool> beamProperties)
+    private int angleFinder(float mirrorAngle)
     {
-        mProperties = beamProperties;
+        if (mirrorAngle > 180)
+        {
+            negater = -1;
+        }
+        else
+        {
+            negater = 1;
+        }
+
+        if (Mathf.Abs(mirrorAngle) % 180 == 0)
+        {
+            return 1;
+        }
+
+        if (Mathf.Abs(mirrorAngle) % 90 == 0 || mirrorAngle == 0)
+        {
+            return 2;
+        }
+
+        if (Mathf.Approximately(Mathf.Abs(mirrorAngle), 45) || Mathf.Approximately(Mathf.Abs(mirrorAngle), 135) || Mathf.Approximately(Mathf.Abs(mirrorAngle), 225) || Mathf.Approximately(Mathf.Abs(mirrorAngle), 315))
+        {
+            return 3;
+        }
+
+        Debug.Log("Invalid mirror angle!");
+        return 4;
     }
 }

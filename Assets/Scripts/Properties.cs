@@ -18,28 +18,19 @@ public class Properties : MonoBehaviour
 
     public ForceType type;
     public float size;
-    public string movementType;
-	public Sprite gravSprite;
-	public Sprite elecSprite;
-	public Sprite fluxSprite;
+	public Sprite gravSprite, elecSprite, fluxSprite;
     bool mStart;
 
     // Use this for initialization
     void Start()
     {
         setType(type);
-        Beam.UpdateForces(gameObject, true);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        GameController.OnScreenForces(gameObject, true);
     }
 
 	private void OnDestroy()
 	{
-        Beam.UpdateForces(gameObject, false);
+        GameController.OnScreenForces(gameObject, false);
 	}
 
 	void setSize(float newSize)
@@ -51,16 +42,17 @@ public class Properties : MonoBehaviour
     {
         this.type = type;
 
-        switch(type) {
-        case ForceType.Graviton:
-			this.GetComponent<SpriteRenderer> ().sprite = gravSprite;
-            break;
-        case ForceType.Fluxion:
-			this.GetComponent<SpriteRenderer> ().sprite = fluxSprite;
-            break;
-        case ForceType.Electron:
-			this.GetComponent<SpriteRenderer> ().sprite = elecSprite;
-            break;
+        switch (type)
+        {
+            case ForceType.Graviton:
+                GetComponent<SpriteRenderer>().sprite = gravSprite;
+                break;
+            case ForceType.Fluxion:
+                GetComponent<SpriteRenderer>().sprite = fluxSprite;
+                break;
+            case ForceType.Electron:
+                GetComponent<SpriteRenderer>().sprite = elecSprite;
+                break;
         }
 
     }
@@ -69,5 +61,6 @@ public class Properties : MonoBehaviour
     {
         return this.type;
     }
+
 
 }
